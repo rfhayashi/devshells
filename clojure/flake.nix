@@ -10,7 +10,7 @@
     {
       devShells.${system} = {
         default = pkgs.mkShell {
-          packages = with pkgs; [ clojure clojure-lsp ];
+          packages = with pkgs; [ clojure clojure-lsp leiningen ];
         };
       };
     };
