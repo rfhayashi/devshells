@@ -33,7 +33,7 @@
    ])
 
 (def commands
-  [{:cmds ["init"] :fn init :args->opts [:template]}   ;; devshell init clojure
+  [{:cmds ["init"] :fn init :args->opts [:template]}
    {:cmds ["direnv"]}  
    {:cmds ["update"]} ;; devshell update (if directory contains flake updates flake.lock)
    ])
