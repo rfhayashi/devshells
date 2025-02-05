@@ -7,12 +7,12 @@
 (defn init [_]
   (let [envrc-path (fs/path *working-dir* ".envrc")]
     (when-not (fs/exists? envrc-path)
-      (fs/create-file envrc-path))))
+      (fs/write-lines envrc-path ["use flake"]))))
 
 (def commands
-  [{:cmds ["init"] :fn init}   ;; devshell init --flake --ignore
-   {:cmds ["add"]}    ;; devshell add clojure
-   {:cmds ["update"]} ;; devshell update
+  [{:cmds ["init"] :fn init}   ;; devshell init
+   {:cmds ["add"]}    ;; devshell add clojure (creates .envrc file if does not exist and add to .gitignore)
+   {:cmds ["update"]} ;; devshell update (if directory contains flake updates flake.lock)
    ])
 
 (defn -main [& args]

@@ -9,13 +9,16 @@
        ~@body)))
 
 (deftest init-test
-  (testing "creates .envrc file"
+  (testing "creates .envrc"
     (with-working-dir [dir]
       (-main "init") 
-      (is (= [] (fs/read-all-lines (fs/path dir ".envrc"))))))
-  (testing "does not clobber .envrc file"
+      (is (= ["use flake"] (fs/read-all-lines (fs/path dir ".envrc"))))))
+  (testing "does not clobber .envrc"
     (with-working-dir [dir]
-      (fs/write-lines (fs/path dir ".envrc") ["use flake"])
+      (fs/write-lines (fs/path dir ".envrc") ["some content"])
       (-main "init")
-      (is (= ["use flake"] (fs/read-all-lines (fs/path dir ".envrc")))))))
-
+      (is (= ["some content"] (fs/read-all-lines (fs/path dir ".envrc"))))))
+  (testing "creates flake.nix")
+  (testing "does not clobber flake.nix")
+  (testing "adds .direnv to .gitignore")
+  (testing "does not clobber .gitignore"))
