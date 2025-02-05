@@ -9,6 +9,13 @@
 
 (def ^:dynamic *working-dir* (fs/cwd))
 
+(defn print-help [{:keys [usage description opts]}]
+  (println (format "usage: %s" usage))
+  (println)
+  (println description)
+  (when (:spec opts)
+    (println (cli/format-opts opts))))
+
 (def devshell-owner "rfhayashi")
 (def devshell-repo "devshells")
 
@@ -59,6 +66,13 @@
    :usage "devshell update"
    :description "Updates flake.lock"})
 
+(def direnv-command-help
+  {:usage "devshell direnv <command>"
+   :description "Commands to manipulate .envrc file"})
+
+(def direnv-command
+  (assoc direnv-command-help :fn (fn [_] (print-help direnv-command-help))))
+
 (defn direnv-add [{{:keys [template]} :opts}]
   (when-file-does-not-exist [envrc-path ".envrc"]
     (fs/create-file envrc-path))
@@ -95,32 +109,32 @@
    :usage "devshell direnv ignore"
    :description "Adds direnv files to private git ignore"})
 
-(defn print-help [{:keys [usage description opts]}]
-  (println (format "usage: %s" usage))
-  (println)
-  (println description)
-  (when (:spec opts)
-    (println (cli/format-opts opts))))
+;; TODO list commands in help
+(def root-command-help
+  {:usage "devshell <command>"
+   :description "Cli utility to manage devshells"})
+
+(def root-command
+  (assoc root-command-help :fn (fn [_] (print-help root-command-help))))
 
 (def commands
-  [{:cmds ["init"] :command init-command}
+  [{:cmds [] :command root-command}
+   {:cmds ["init"] :command init-command}
    {:cmds ["update"] :command update-command}
+   {:cmds ["direnv"] :command direnv-command}
    {:cmds ["direnv" "add"] :command direnv-add-command}
    {:cmds ["direnv" "update"] :command direnv-update-command}
    {:cmds ["direnv" "ignore"] :command direnv-ignore-command}])
 
-;; TODO list commands in help
 (defn help-table [commands]
-  (concat
-   [{:cmds [] :fn (fn [_] (print-help {:usage "devshell <command>" :description "Cli utility to manage devshells"}))}]
-   (map
-    (fn [{:keys [cmds command]}]
-      {:cmds cmds
-       :fn (fn [{{:keys [help]} :opts}]
-             (when help
-               (print-help command)))
-       :aliases {:h :help}})
-    commands)))
+  (map
+   (fn [{:keys [cmds command]}]
+     {:cmds cmds
+      :fn (fn [{{:keys [help]} :opts}]
+            (when help
+              (print-help command)))
+      :aliases {:h :help}})
+   commands))
 
 (defn command-table [commands]
   (map
