@@ -13,11 +13,21 @@
       (json/parse-string keyword)
       :sha))
 
+(defn flake-url []
+  (format "github:rfhayashi/devshells/%s" (devshell-revision)))
+
 (defn template-url [template]
-  (format "github:rfhayashi/devshells/%s#%s" (devshell-revision) template))
+  (format "%s#%s" (flake-url) template))
+
+(defn devshell-url [template]
+  (format "%s?dir=%s" (flake-url) template))
+
+(defmacro with-path [[binding local-path] & body]
+  `(let [~binding (fs/path *working-dir* ~local-path)]
+     ~@body))
 
 (defmacro when-file-does-not-exist [[binding path] & body]
-  `(let [~binding (fs/path *working-dir* ~path)]
+  `(with-path [~binding ~path]
      (when-not (fs/exists? ~binding)
        ~@body)))
 
@@ -30,15 +40,25 @@
 (defn update [_]
   (shell "nix flake update"))
 
+(defn direnv-add [{{:keys [template]} :opts}]
+  (when-file-does-not-exist [envrc-path ".envrc"]
+    (fs/create-file envrc-path))
+  (with-path [envrc-path ".envrc"]
+    (fs/write-lines envrc-path [(format "use flake \"%s\"" (devshell-url template))] {:append true}))
+  (shell "direnv allow"))
+
 (def direnv-commands
-  [{:cmds ["add"]}    ;; add a devshell template to .envrc
+  [{:cmds ["add"] :fn direnv-add :args->opts [:template]}
    {:cmds ["update"]} ;; update revisions
    {:cmds ["ignore"]} ;; adds direnv files to private git ignore
    ])
 
+(defn direnv [{:keys [args]}]
+  (cli/dispatch direnv-commands args))
+
 (def commands
   [{:cmds ["init"] :fn init :args->opts [:template]}
-   {:cmds ["direnv"]}  
+   {:cmds ["direnv"] :fn direnv}
    {:cmds ["update"] :fn update}
    ])
 
