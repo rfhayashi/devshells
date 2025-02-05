@@ -54,7 +54,7 @@
     (fs/write-lines envrc-path [(format "use flake \"%s\"" (devshell-url template))] {:append true}))
   (shell "direnv allow"))
 
-(def devshell-rx (re-pattern (format "(%s)/[^?]*" flake-base-url )))
+(def devshell-rx (re-pattern (format "(%s)/[^?]*" flake-base-url)))
 
 (defn direnv-update [_]
   (with-path [envrc-path ".envrc"]
