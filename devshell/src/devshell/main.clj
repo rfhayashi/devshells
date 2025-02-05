@@ -1,4 +1,5 @@
 (ns devshell.main
+  (:refer-clojure :exclude [update])
   (:require [babashka.cli :as cli]
             [babashka.fs :as fs]
             [babashka.process :refer [shell]]
