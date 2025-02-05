@@ -56,10 +56,6 @@
 
 (def devshell-rx (re-pattern (format "(%s)/[^?]*" flake-base-url )))
 
-(re-find #"github:rfhayashi/devshells/[^?]*" "github:rfhayashi/devshells/rev1?src=1" )
-
-(str/replace "github:rfhayashi/devshells/rev1?src=clojure" devshell-rx "$1/rev2")
-
 (defn direnv-update [_]
   (with-path [envrc-path ".envrc"]
     (fs/update-file (str envrc-path) str/replace devshell-rx (format "$1/%s" (devshell-revision))))
