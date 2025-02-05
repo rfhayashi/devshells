@@ -15,11 +15,15 @@
 (defn template-url [template]
   (format "github:rfhayashi/devshells/%s#%s" (devshell-revision) template))
 
+(defmacro when-file-does-not-exist [[binding path] & body]
+  `(let [~binding (fs/path *working-dir* ~path)]
+     (when-not (fs/exists? ~binding)
+       ~@body)))
+
 (defn init [{{:keys [template]} :opts}]
   (shell "nix flake init -t" (template-url template))
-  (let [envrc-path (fs/path *working-dir* ".envrc")]
-    (when-not (fs/exists? envrc-path)
-      (fs/write-lines envrc-path ["use flake"])))
+  (when-file-does-not-exist [envrc-path ".envrc"]
+    (fs/write-lines envrc-path ["use flake"]))
   (shell "direnv allow"))
 
 (def direnv-commands
