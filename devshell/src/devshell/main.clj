@@ -77,8 +77,7 @@
 (def commands
   [{:cmds ["init"] :fn init :args->opts [:template]}
    {:cmds ["direnv"] :fn direnv}
-   {:cmds ["update"] :fn update}
-   ])
+   {:cmds ["update"] :fn update}])
 
 (defn -main [& args]
   (cli/dispatch commands args))
