@@ -5,7 +5,9 @@
 (def ^:dynamic *working-dir* (fs/cwd))
 
 (defn init [_]
-  (fs/create-file (fs/path *working-dir* ".envrc")))
+  (let [envrc-path (fs/path *working-dir* ".envrc")]
+    (when-not (fs/exists? envrc-path)
+      (fs/create-file envrc-path))))
 
 (def commands
   [{:cmds ["init"] :fn init}   ;; devshell init --flake --ignore

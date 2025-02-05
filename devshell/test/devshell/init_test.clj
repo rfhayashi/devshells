@@ -12,5 +12,10 @@
   (testing "creates .envrc file"
     (with-working-dir [dir]
       (-main "init") 
-      (is (= "" (slurp (str (fs/path dir ".envrc"))))))))
+      (is (= [] (fs/read-all-lines (fs/path dir ".envrc"))))))
+  (testing "does not clobber .envrc file"
+    (with-working-dir [dir]
+      (fs/write-lines (fs/path dir ".envrc") ["use flake"])
+      (-main "init")
+      (is (= ["use flake"] (fs/read-all-lines (fs/path dir ".envrc")))))))
 
