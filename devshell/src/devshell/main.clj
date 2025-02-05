@@ -61,11 +61,15 @@
     (fs/update-file (str envrc-path) str/replace devshell-rx (format "$1/%s" (devshell-revision))))
   (shell "direnv allow"))
 
+(defn direnv-ignore [_]
+  (with-path [git-path ".git"]
+    (when (fs/exists? git-path)
+      (fs/write-lines (fs/path git-path "info/exclude") [".direnv" ".envrc"] {:append true}))))
+
 (def direnv-commands
   [{:cmds ["add"] :fn direnv-add :args->opts [:template]}
    {:cmds ["update"] :fn direnv-update}
-   {:cmds ["ignore"]} ;; adds direnv files to private git ignore
-   ])
+   {:cmds ["ignore"] :fn direnv-ignore}])
 
 (defn direnv [{:keys [args]}]
   (cli/dispatch direnv-commands args))
