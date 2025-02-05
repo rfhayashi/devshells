@@ -26,8 +26,11 @@
     (fs/write-lines envrc-path ["use flake"]))
   (shell "direnv allow"))
 
+(defn update [_]
+  (shell "nix flake update"))
+
 (def direnv-commands
-  [{:cmds ["add"]} ;; add a devshell template to .envrc
+  [{:cmds ["add"]}    ;; add a devshell template to .envrc
    {:cmds ["update"]} ;; update revisions
    {:cmds ["ignore"]} ;; adds direnv files to private git ignore
    ])
@@ -35,7 +38,7 @@
 (def commands
   [{:cmds ["init"] :fn init :args->opts [:template]}
    {:cmds ["direnv"]}  
-   {:cmds ["update"]} ;; devshell update (if directory contains flake updates flake.lock)
+   {:cmds ["update"] :fn update}
    ])
 
 (defn -main [& args]
