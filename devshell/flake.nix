@@ -10,7 +10,7 @@
       {
         devShells.${system} = {
           default = pkgs.mkShell {
-            packages = with pkgs; [ babashka clojure-lsp ];
+            packages = with pkgs; [ babashka clojure-lsp gh ];
           };
         };
       };
