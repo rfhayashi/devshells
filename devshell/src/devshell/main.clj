@@ -3,18 +3,25 @@
   (:require [babashka.cli :as cli]
             [babashka.fs :as fs]
             [babashka.process :refer [shell]]
-            [cheshire.core :as json]))
+            [cheshire.core :as json]
+            [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (def ^:dynamic *working-dir* (fs/cwd))
 
+(def devshell-owner "rfhayashi")
+(def devshell-repo "devshells")
+
 (defn devshell-revision []
-  (-> (shell {:out :string} "gh api /repos/rfhayashi/devshells/commits/main")
+  (-> (shell {:out :string} (format "gh api /repos/%s/%s/commits/main" devshell-owner devshell-repo))
       :out
       (json/parse-string keyword)
       :sha))
 
+(def flake-base-url (format "github:%s/%s" devshell-owner devshell-repo))
+
 (defn flake-url []
-  (format "github:rfhayashi/devshells/%s" (devshell-revision)))
+  (format "%s/%s" flake-base-url (devshell-revision)))
 
 (defn template-url [template]
   (format "%s#%s" (flake-url) template))
@@ -47,9 +54,20 @@
     (fs/write-lines envrc-path [(format "use flake \"%s\"" (devshell-url template))] {:append true}))
   (shell "direnv allow"))
 
+(def devshell-rx (re-pattern (format "(%s)/[^?]*" flake-base-url )))
+
+(re-find #"github:rfhayashi/devshells/[^?]*" "github:rfhayashi/devshells/rev1?src=1" )
+
+(str/replace "github:rfhayashi/devshells/rev1?src=clojure" devshell-rx "$1/rev2")
+
+(defn direnv-update [_]
+  (with-path [envrc-path ".envrc"]
+    (fs/update-file (str envrc-path) str/replace devshell-rx (format "$1/%s" (devshell-revision))))
+  (shell "direnv allow"))
+
 (def direnv-commands
   [{:cmds ["add"] :fn direnv-add :args->opts [:template]}
-   {:cmds ["update"]} ;; update revisions
+   {:cmds ["update"] :fn direnv-update}
    {:cmds ["ignore"]} ;; adds direnv files to private git ignore
    ])
 
