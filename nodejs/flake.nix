@@ -1,5 +1,5 @@
 {
-  description = "Clojure development environment";
+  description = "Nodejs environment";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
   outputs = { nixpkgs, ... }:
